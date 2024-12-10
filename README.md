@@ -58,10 +58,12 @@ mkdir -p app/static/uploads
 ```
 
 6. Initialize the database:
-```bash
+```python
 python3
->>> from app import db
->>> db.create_all()
+>>> from app import app, db
+>>> with app.app_context():
+...     db.create_all()
+... 
 >>> exit()
 ```
 
@@ -104,6 +106,11 @@ If you see an error about "externally-managed-environment", make sure you:
 1. Have created and activated the virtual environment (`.venv`) before installing packages
 2. Have installed python3-venv package
 3. Are not using the system Python installation
+
+### Database Initialization Error
+If you see an error about "Working outside of application context", make sure you:
+1. Import both app and db: `from app import app, db`
+2. Use an application context: `with app.app_context(): db.create_all()`
 
 ### Permission Issues
 If you encounter permission issues:
