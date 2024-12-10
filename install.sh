@@ -29,11 +29,12 @@ check_status() {
     fi
 }
 
-# Make sure script is run as regular user
+# Make sure script is not run as root
 if [ "$(id -u)" = "0" ]; then
     print_error "This script should NOT be run as root"
+    print_warning "Please run without sudo"
     exit 1
-}
+fi
 
 # Welcome message
 echo "================================================================="
