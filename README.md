@@ -9,6 +9,7 @@ A Flask-based event management application that allows users to create, edit, an
 - Location suggestions with automatic address completion
 - Date and time scheduling
 - Responsive design using Bootstrap
+- LAN access support
 
 ## Requirements
 
@@ -65,16 +66,25 @@ python3
 
 7. Run the application:
 ```bash
-# Method 1: Using Flask CLI
+# Method 1: Using Flask CLI (LAN access)
 export FLASK_APP=run.py
 export FLASK_ENV=development
-flask run
+flask run --host=0.0.0.0
 
-# Method 2: Using Python directly
+# Method 2: Using Python directly (recommended for LAN access)
 python3 run.py
 ```
 
-The application will be available at `http://localhost:5000`
+The application will be available at:
+- Local access: `http://localhost:5000`
+- LAN access: `http://<your-ip-address>:5000`
+
+To find your IP address, use the command:
+```bash
+ip addr show
+# or
+hostname -I
+```
 
 ## Project Structure
 
@@ -100,6 +110,19 @@ event_management_app_python3/
 └── run.py              # Application entry point
 ```
 
+## Security Considerations for LAN Access
+
+1. The application is set to be accessible on your local network. Be aware that:
+   - Anyone on your network can access the application
+   - Debug mode is enabled for development (disable for production)
+   - Consider adding authentication for sensitive environments
+
+2. For production use, consider:
+   - Adding user authentication
+   - Using HTTPS
+   - Configuring a proper web server (like nginx)
+   - Disabling debug mode
+
 ## Common Issues and Solutions
 
 ### Externally Managed Environment Error
@@ -113,6 +136,13 @@ If you see an error about "Working outside of application context", make sure yo
 1. Import both create_app and db: `from app import create_app, db`
 2. Create the app: `app = create_app()`
 3. Use an application context: `with app.app_context(): db.create_all()`
+
+### Network Access Issues
+If others cannot access the application:
+1. Verify the application is running with host='0.0.0.0'
+2. Check your firewall settings: `sudo ufw status`
+3. Allow port 5000 if needed: `sudo ufw allow 5000`
+4. Ensure you're using the correct IP address
 
 ### Permission Issues
 If you encounter permission issues:
