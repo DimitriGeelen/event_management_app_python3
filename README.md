@@ -47,11 +47,6 @@ pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
-Note: If you encounter any permission issues, you can alternatively install packages using:
-```bash
-pip install --user -r requirements.txt
-```
-
 5. Create the necessary directories:
 ```bash
 mkdir -p app/static/uploads
@@ -60,7 +55,8 @@ mkdir -p app/static/uploads
 6. Initialize the database:
 ```python
 python3
->>> from app import app, db
+>>> from app import create_app, db
+>>> app = create_app()
 >>> with app.app_context():
 ...     db.create_all()
 ... 
@@ -69,9 +65,13 @@ python3
 
 7. Run the application:
 ```bash
-export FLASK_APP=app
+# Method 1: Using Flask CLI
+export FLASK_APP=run.py
 export FLASK_ENV=development
 flask run
+
+# Method 2: Using Python directly
+python3 run.py
 ```
 
 The application will be available at `http://localhost:5000`
@@ -81,22 +81,23 @@ The application will be available at `http://localhost:5000`
 ```
 event_management_app_python3/
 ├── app/
-│   ├── __init__.py
-│   ├── models.py
-│   ├── forms.py
-│   ├── routes.py
+│   ├── __init__.py      # Application factory and configuration
+│   ├── models.py        # Database models
+│   ├── forms.py         # Form definitions
+│   ├── routes.py        # Route handlers and business logic
 │   ├── static/
 │   │   ├── css/
 │   │   │   └── style.css
 │   │   ├── js/
 │   │   │   └── main.js
-│   │   └── uploads/
+│   │   └── uploads/     # Uploaded files directory
 │   └── templates/
 │       ├── base.html
 │       ├── index.html
 │       ├── create_event.html
 │       └── edit_event.html
-└── requirements.txt
+├── requirements.txt     # Python dependencies
+└── run.py              # Application entry point
 ```
 
 ## Common Issues and Solutions
@@ -109,8 +110,9 @@ If you see an error about "externally-managed-environment", make sure you:
 
 ### Database Initialization Error
 If you see an error about "Working outside of application context", make sure you:
-1. Import both app and db: `from app import app, db`
-2. Use an application context: `with app.app_context(): db.create_all()`
+1. Import both create_app and db: `from app import create_app, db`
+2. Create the app: `app = create_app()`
+3. Use an application context: `with app.app_context(): db.create_all()`
 
 ### Permission Issues
 If you encounter permission issues:
