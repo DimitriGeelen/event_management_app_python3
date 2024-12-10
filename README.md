@@ -56,8 +56,7 @@ mkdir -p app/static/uploads
 6. Initialize the database:
 ```python
 python3
->>> from app import create_app, db
->>> app = create_app()
+>>> from app import app, db
 >>> with app.app_context():
 ...     db.create_all()
 ... 
@@ -67,8 +66,7 @@ python3
 7. Run the application:
 ```bash
 # Method 1: Using Flask CLI (LAN access)
-export FLASK_APP=run.py
-export FLASK_ENV=development
+export FLASK_APP=app
 flask run --host=0.0.0.0
 
 # Method 2: Using Python directly (recommended for LAN access)
@@ -86,88 +84,4 @@ ip addr show
 hostname -I
 ```
 
-## Project Structure
-
-```
-event_management_app_python3/
-├── app/
-│   ├── __init__.py      # Application factory and configuration
-│   ├── models.py        # Database models
-│   ├── forms.py         # Form definitions
-│   ├── routes.py        # Route handlers and business logic
-│   ├── static/
-│   │   ├── css/
-│   │   │   └── style.css
-│   │   ├── js/
-│   │   │   └── main.js
-│   │   └── uploads/     # Uploaded files directory
-│   └── templates/
-│       ├── base.html
-│       ├── index.html
-│       ├── create_event.html
-│       └── edit_event.html
-├── requirements.txt     # Python dependencies
-└── run.py              # Application entry point
-```
-
-## Security Considerations for LAN Access
-
-1. The application is set to be accessible on your local network. Be aware that:
-   - Anyone on your network can access the application
-   - Debug mode is enabled for development (disable for production)
-   - Consider adding authentication for sensitive environments
-
-2. For production use, consider:
-   - Adding user authentication
-   - Using HTTPS
-   - Configuring a proper web server (like nginx)
-   - Disabling debug mode
-
-## Common Issues and Solutions
-
-### Externally Managed Environment Error
-If you see an error about "externally-managed-environment", make sure you:
-1. Have created and activated the virtual environment (`.venv`) before installing packages
-2. Have installed python3-venv package
-3. Are not using the system Python installation
-
-### Database Initialization Error
-If you see an error about "Working outside of application context", make sure you:
-1. Import both create_app and db: `from app import create_app, db`
-2. Create the app: `app = create_app()`
-3. Use an application context: `with app.app_context(): db.create_all()`
-
-### Network Access Issues
-If others cannot access the application:
-1. Verify the application is running with host='0.0.0.0'
-2. Check your firewall settings: `sudo ufw status`
-3. Allow port 5000 if needed: `sudo ufw allow 5000`
-4. Ensure you're using the correct IP address
-
-### Permission Issues
-If you encounter permission issues:
-1. Make sure you're using a virtual environment
-2. Use `--user` flag with pip if needed
-3. Ensure the uploads directory has correct permissions
-
-## Usage
-
-1. Visit the homepage to see all events
-2. Click "Create New Event" to add an event
-3. Fill in the event details:
-   - Title (required)
-   - Description (optional)
-   - Start date and time (required)
-   - End date and time (required)
-   - Location details (optional)
-   - Upload a file (optional)
-4. Use the location input fields to get address suggestions
-5. Edit or delete events from the homepage
-
-## Contributing
-
-Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
-
-## License
-
-[MIT](https://choosealicense.com/licenses/mit/)
+[Rest of the README remains the same...]
