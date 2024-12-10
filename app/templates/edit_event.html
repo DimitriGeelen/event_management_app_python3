@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <h1>Edit Event</h1>
+        <form method="POST" enctype="multipart/form-data">
+            {{ form.csrf_token }}
+            
+            <div class="mb-3">
+                <label for="title" class="form-label">Title</label>
+                {{ form.title(class="form-control") }}
+                {% if form.title.errors %}
+                    {% for error in form.title.errors %}
+                        <div class="text-danger">{{ error }}</div>
+                    {% endfor %}
+                {% endif %}
+            </div>
+            
+            <div class="mb-3">
+                <label for="description" class="form-label">Description</label>
+                {{ form.description(class="form-control") }}
+            </div>
+            
+            <div class="mb-3">
+                <label for="start_datetime" class="form-label">Start Date & Time</label>
+                {{ form.start_datetime(class="form-control") }}
+            </div>
+            
+            <div class="mb-3">
+                <label for="end_datetime" class="form-label">End Date & Time</label>
+                {{ form.end_datetime(class="form-control") }}
+            </div>
+            
+            <div class="mb-3">
+                <label for="location_name" class="form-label">Location Name</label>
+                {{ form.location_name(class="form-control location-input") }}
+            </div>
+            
+            <div class="mb-3">
+                <label for="street_name" class="form-label">Street Name</label>
+                {{ form.street_name(class="form-control location-input") }}
+            </div>
+            
+            <div class="mb-3">
+                <label for="street_number" class="form-label">Street Number</label>
+                {{ form.street_number(class="form-control") }}
+            </div>
+            
+            <div class="mb-3">
+                <label for="postal_code" class="form-label">Postal Code</label>
+                {{ form.postal_code(class="form-control location-input") }}
+            </div>
+            
+            <div class="mb-3">
+                <label for="file" class="form-label">Upload File (Images or PDF)</label>
+                {{ form.file(class="form-control") }}
+                {% if event.file_path %}
+                <p class="mt-2">Current file: 
+                    <a href="{{ url_for('static', filename='uploads/' + event.file_path) }}" target="_blank">
+                        {{ event.file_path }}
+                    </a>
+                </p>
+                {% endif %}
+            </div>
+            
+            <button type="submit" class="btn btn-primary">Update Event</button>
+            <a href="{{ url_for('index') }}" class="btn btn-secondary">Cancel</a>
+        </form>
+    </div>
+</div>
+{% endblock %}
