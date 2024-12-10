@@ -24,4 +24,5 @@ def create_app():
     
     return app
 
+# Create the application instance
 app = create_app()
