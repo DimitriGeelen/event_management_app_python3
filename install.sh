@@ -29,38 +29,18 @@ check_status() {
     fi
 }
 
-# Make sure script is not run as root
-if [ "$(id -u)" = "0" ]; then
-    print_error "This script should NOT be run as root"
-    print_warning "Please run without sudo"
-    exit 1
-fi
-
 # Welcome message
 echo "================================================================="
 echo "Event Management Application Installation Script"
 echo "================================================================="
 echo
 
-# Check if running on Ubuntu 24.04
-if [ -f /etc/os-release ]; then
-    . /etc/os-release
-    if [ "$VERSION_ID" != "24.04" ]; then
-        print_warning "This script is designed for Ubuntu 24.04. You're running: $PRETTY_NAME"
-        read -p "Continue anyway? (y/N) " -n 1 -r
-        echo
-        if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-            exit 1
-        fi
-    fi
-fi
-
 # Update package list and install required packages
 print_status "Updating package list and installing required packages..."
-sudo apt update
+apt update
 check_status "Package list updated" "Failed to update package list"
 
-sudo apt install -y python3-venv python3-pip
+apt install -y python3-venv python3-pip
 check_status "Required packages installed" "Failed to install required packages"
 
 # Create and activate virtual environment
@@ -110,9 +90,9 @@ fi
 
 # Configuration for LAN access
 print_status "Checking firewall status..."
-if sudo ufw status | grep -q "Status: active"; then
+if ufw status | grep -q "Status: active"; then
     print_status "Configuring firewall to allow port 5000..."
-    sudo ufw allow 5000/tcp
+    ufw allow 5000/tcp
     check_status "Firewall configured" "Failed to configure firewall"
 else
     print_warning "Firewall is not active. No configuration needed."
@@ -131,7 +111,7 @@ echo "1. Make sure you're in the project directory"
 echo "2. Activate the virtual environment (if not already activated):"
 echo "   source .venv/bin/activate"
 echo "\n3. Start the application using either method:"
-echo "   Method 1: flask run --host=0.0.0.0"
+echo "   Method 1: export FLASK_APP=app && flask run --host=0.0.0.0"
 echo "   Method 2: python3 run.py"
 echo "\nAccess the application at:"
 echo "- Local: http://localhost:5000"
