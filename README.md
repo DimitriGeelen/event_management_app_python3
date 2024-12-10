@@ -24,23 +24,40 @@ git clone https://github.com/DimitriGeelen/event_management_app_python3.git
 cd event_management_app_python3
 ```
 
-2. Create a virtual environment:
+2. First, install required system packages:
 ```bash
-python3 -m venv venv
-source venv/bin/activate
+sudo apt update
+sudo apt install python3-venv python3-pip
 ```
 
-3. Install dependencies:
+3. Create and prepare the virtual environment:
+```bash
+# Create virtual environment
+python3 -m venv .venv
+
+# Activate virtual environment
+source .venv/bin/activate
+
+# Upgrade pip in the virtual environment
+pip install --upgrade pip
+```
+
+4. Install dependencies (make sure your virtual environment is activated):
 ```bash
 pip install -r requirements.txt
 ```
 
-4. Create the necessary directories:
+Note: If you encounter any permission issues, you can alternatively install packages using:
+```bash
+pip install --user -r requirements.txt
+```
+
+5. Create the necessary directories:
 ```bash
 mkdir -p app/static/uploads
 ```
 
-5. Initialize the database:
+6. Initialize the database:
 ```bash
 python3
 >>> from app import db
@@ -48,7 +65,7 @@ python3
 >>> exit()
 ```
 
-6. Run the application:
+7. Run the application:
 ```bash
 export FLASK_APP=app
 export FLASK_ENV=development
@@ -79,6 +96,20 @@ event_management_app_python3/
 │       └── edit_event.html
 └── requirements.txt
 ```
+
+## Common Issues and Solutions
+
+### Externally Managed Environment Error
+If you see an error about "externally-managed-environment", make sure you:
+1. Have created and activated the virtual environment (`.venv`) before installing packages
+2. Have installed python3-venv package
+3. Are not using the system Python installation
+
+### Permission Issues
+If you encounter permission issues:
+1. Make sure you're using a virtual environment
+2. Use `--user` flag with pip if needed
+3. Ensure the uploads directory has correct permissions
 
 ## Usage
 
