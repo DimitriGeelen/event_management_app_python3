@@ -1,20 +1,22 @@
 import os
-from flask import render_template, request, redirect, url_for, jsonify, flash
+from flask import Blueprint, render_template, request, redirect, url_for, jsonify, flash, current_app
 from werkzeug.utils import secure_filename
-from app import app, db
+from app import db
 from app.models import Event
 from app.forms import EventForm
 import geocoder
 
+bp = Blueprint('main', __name__)
+
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in {'pdf', 'png', 'jpg', 'jpeg'}
 
-@app.route('/')
+@bp.route('/')
 def index():
     events = Event.query.order_by(Event.start_datetime).all()
     return render_template('index.html', events=events)
 
-@app.route('/event/new', methods=['GET', 'POST'])
+@bp.route('/event/new', methods=['GET', 'POST'])
 def create_event():
     form = EventForm()
     if form.validate_on_submit():
@@ -33,17 +35,17 @@ def create_event():
             file = form.file.data
             if file and allowed_file(file.filename):
                 filename = secure_filename(file.filename)
-                file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+                file.save(os.path.join(current_app.config['UPLOAD_FOLDER'], filename))
                 event.file_path = filename
         
         db.session.add(event)
         db.session.commit()
         flash('Event created successfully!', 'success')
-        return redirect(url_for('index'))
+        return redirect(url_for('main.index'))
     
     return render_template('create_event.html', form=form)
 
-@app.route('/event/<int:id>/edit', methods=['GET', 'POST'])
+@bp.route('/event/<int:id>/edit', methods=['GET', 'POST'])
 def edit_event(id):
     event = Event.query.get_or_404(id)
     form = EventForm(obj=event)
@@ -62,35 +64,35 @@ def edit_event(id):
             file = form.file.data
             if file and allowed_file(file.filename):
                 if event.file_path:
-                    old_file_path = os.path.join(app.config['UPLOAD_FOLDER'], event.file_path)
+                    old_file_path = os.path.join(current_app.config['UPLOAD_FOLDER'], event.file_path)
                     if os.path.exists(old_file_path):
                         os.remove(old_file_path)
                 
                 filename = secure_filename(file.filename)
-                file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+                file.save(os.path.join(current_app.config['UPLOAD_FOLDER'], filename))
                 event.file_path = filename
         
         db.session.commit()
         flash('Event updated successfully!', 'success')
-        return redirect(url_for('index'))
+        return redirect(url_for('main.index'))
     
     return render_template('edit_event.html', form=form, event=event)
 
-@app.route('/event/<int:id>/delete', methods=['POST'])
+@bp.route('/event/<int:id>/delete', methods=['POST'])
 def delete_event(id):
     event = Event.query.get_or_404(id)
     
     if event.file_path:
-        file_path = os.path.join(app.config['UPLOAD_FOLDER'], event.file_path)
+        file_path = os.path.join(current_app.config['UPLOAD_FOLDER'], event.file_path)
         if os.path.exists(file_path):
             os.remove(file_path)
     
     db.session.delete(event)
     db.session.commit()
     flash('Event deleted successfully!', 'success')
-    return redirect(url_for('index'))
+    return redirect(url_for('main.index'))
 
-@app.route('/api/location-suggestions')
+@bp.route('/api/location-suggestions')
 def location_suggestions():
     query = request.args.get('query', '')
     if len(query) < 3:

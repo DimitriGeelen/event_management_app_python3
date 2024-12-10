@@ -3,12 +3,25 @@ from flask_sqlalchemy import SQLAlchemy
 from dotenv import load_dotenv
 import os
 
-load_dotenv()
+db = SQLAlchemy()
 
-app = Flask(__name__)
-app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'dev')
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///events.db'
-app.config['UPLOAD_FOLDER'] = os.path.join(app.root_path, 'static/uploads')
-db = SQLAlchemy(app)
+def create_app():
+    app = Flask(__name__)
+    
+    load_dotenv()
+    
+    app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'dev')
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///events.db'
+    app.config['UPLOAD_FOLDER'] = os.path.join(app.root_path, 'static/uploads')
+    
+    db.init_app(app)
+    
+    from app import routes
+    app.register_blueprint(routes.bp)
+    
+    # Ensure the uploads directory exists
+    os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+    
+    return app
 
-from app import routes, models
+app = create_app()
