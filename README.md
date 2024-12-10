@@ -26,7 +26,7 @@ cd event_management_app_python3
 
 2. Create a virtual environment:
 ```bash
-python -m venv venv
+python3 -m venv venv
 source venv/bin/activate
 ```
 
@@ -42,7 +42,7 @@ mkdir -p app/static/uploads
 
 5. Initialize the database:
 ```bash
-python
+python3
 >>> from app import db
 >>> db.create_all()
 >>> exit()
