@@ -4,7 +4,7 @@ from werkzeug.utils import secure_filename
 from app import db
 from app.models import Event
 from app.forms import EventForm
-import geocoder
+import requests
 
 bp = Blueprint('main', __name__)
 
@@ -98,16 +98,40 @@ def location_suggestions():
     if len(query) < 3:
         return jsonify([])
     
-    locations = geocoder.osm(query)
-    suggestions = []
+    # OpenStreetMap Nominatim API endpoint
+    url = 'https://nominatim.openstreetmap.org/search'
     
-    for location in locations:
-        if location.address:
-            suggestions.append({
-                'address': location.address,
-                'postal_code': location.postal,
-                'street': location.street,
-                'house_number': location.house_number
-            })
+    # Parameters for the API request
+    params = {
+        'q': query,
+        'format': 'json',
+        'addressdetails': 1,
+        'limit': 5
+    }
     
-    return jsonify(suggestions[:5])
+    # Headers including User-Agent as required by OpenStreetMap
+    headers = {
+        'User-Agent': 'EventManagementApp/1.0 (contact@yourdomain.com)'
+    }
+    
+    try:
+        response = requests.get(url, params=params, headers=headers)
+        response.raise_for_status()  # Raise an exception for bad status codes
+        results = response.json()
+        
+        suggestions = []
+        for result in results:
+            address = result.get('address', {})
+            suggestion = {
+                'address': result.get('display_name', ''),
+                'postal_code': address.get('postcode', ''),
+                'street': address.get('road', ''),
+                'house_number': address.get('house_number', '')
+            }
+            suggestions.append(suggestion)
+        
+        return jsonify(suggestions)
+    
+    except requests.exceptions.RequestException as e:
+        current_app.logger.error(f'Error fetching location suggestions: {str(e)}')
+        return jsonify([]), 500
