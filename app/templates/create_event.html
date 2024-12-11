@@ -3,69 +3,80 @@
 {% block content %}
 <div class="row">
     <div class="col-md-8 offset-md-2">
-        <h1>Create Event</h1>
-        <form method="POST" enctype="multipart/form-data">
-            {{ form.csrf_token }}
-            
-            <div class="mb-3">
-                <label for="title" class="form-label">Title</label>
-                {{ form.title(class="form-control") }}
-                {% if form.title.errors %}
-                    {% for error in form.title.errors %}
-                        <div class="text-danger">{{ error }}</div>
-                    {% endfor %}
-                {% endif %}
+        <div class="card">
+            <div class="card-body">
+                <h1 class="card-title">Create Event</h1>
+                <form method="POST" enctype="multipart/form-data">
+                    {{ form.csrf_token }}
+                    
+                    <div class="mb-3">
+                        <label for="title" class="form-label">Title</label>
+                        {{ form.title(class="form-control") }}
+                        {% if form.title.errors %}
+                            {% for error in form.title.errors %}
+                                <div class="text-danger">{{ error }}</div>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="category_id" class="form-label">Category</label>
+                        {{ form.category_id(class="form-control") }}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description</label>
+                        {{ form.description(class="form-control") }}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="start_datetime" class="form-label">Start Date & Time</label>
+                        {{ form.start_datetime(class="form-control") }}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="end_datetime" class="form-label">End Date & Time</label>
+                        {{ form.end_datetime(class="form-control") }}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="location_name" class="form-label">Location Name</label>
+                        {{ form.location_name(class="form-control location-input") }}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="street_name" class="form-label">Street Name</label>
+                        {{ form.street_name(class="form-control location-input") }}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="street_number" class="form-label">Street Number</label>
+                        {{ form.street_number(class="form-control") }}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="postal_code" class="form-label">Postal Code</label>
+                        {{ form.postal_code(class="form-control location-input") }}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="file" class="form-label">Upload File (Images or PDF)</label>
+                        {{ form.file(class="form-control") }}
+                        {% if form.file.errors %}
+                            {% for error in form.file.errors %}
+                                <div class="text-danger">{{ error }}</div>
+                            {% endfor %}
+                        {% endif %}
+                        <small class="text-muted">Allowed file types: JPG, JPEG, PNG, PDF</small>
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{{ url_for('main.index') }}" class="btn btn-secondary me-md-2">Cancel</a>
+                        <button type="submit" class="btn btn-primary">Create Event</button>
+                    </div>
+                </form>
             </div>
-            
-            <div class="mb-3">
-                <label for="description" class="form-label">Description</label>
-                {{ form.description(class="form-control") }}
-            </div>
-            
-            <div class="mb-3">
-                <label for="start_datetime" class="form-label">Start Date & Time</label>
-                {{ form.start_datetime(class="form-control") }}
-            </div>
-            
-            <div class="mb-3">
-                <label for="end_datetime" class="form-label">End Date & Time</label>
-                {{ form.end_datetime(class="form-control") }}
-            </div>
-            
-            <div class="mb-3">
-                <label for="location_name" class="form-label">Location Name</label>
-                {{ form.location_name(class="form-control location-input") }}
-            </div>
-            
-            <div class="mb-3">
-                <label for="street_name" class="form-label">Street Name</label>
-                {{ form.street_name(class="form-control location-input") }}
-            </div>
-            
-            <div class="mb-3">
-                <label for="street_number" class="form-label">Street Number</label>
-                {{ form.street_number(class="form-control") }}
-            </div>
-            
-            <div class="mb-3">
-                <label for="postal_code" class="form-label">Postal Code</label>
-                {{ form.postal_code(class="form-control location-input") }}
-            </div>
-            
-            <div class="mb-3">
-                <label for="file" class="form-label">Upload File (Images or PDF)</label>
-                {{ form.file(class="form-control") }}
-                {% if form.file.errors %}
-                    {% for error in form.file.errors %}
-                        <div class="text-danger">{{ error }}</div>
-                    {% endfor %}
-                {% endif %}
-                <small class="text-muted">Allowed file types: JPG, JPEG, PNG, PDF</small>
-            </div>
-            
-            <button type="submit" class="btn btn-primary">Create Event</button>
-            <a href="{{ url_for('main.index') }}" class="btn btn-secondary">Cancel</a>
-        </form>
+        </div>
     </div>
 </div>
 {% endblock %}
