@@ -8,6 +8,18 @@
     </div>
 </div>
 
+<!-- Map Section -->
+<div class="row mb-4">
+    <div class="col">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Event Locations</h5>
+                <div id="map" style="height: 400px; width: 100%;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="row">
     {% for event in events %}
     <div class="col-md-6 mb-4">
@@ -51,4 +63,19 @@
     </div>
     {% endfor %}
 </div>
+
+<!-- Add event data for the map -->
+<script>
+    var eventLocations = [
+        {% for event in events %}
+            {% if event.location_name or event.street_name %}
+            {
+                title: "{{ event.title }}",
+                location: "{% if event.location_name %}{{ event.location_name }}{% endif %}{% if event.street_name %}, {{ event.street_name }} {{ event.street_number }}{% endif %}{% if event.postal_code %}, {{ event.postal_code }}{% endif %}",
+                start: "{{ event.start_datetime.strftime('%Y-%m-%d %H:%M') }}"
+            },
+            {% endif %}
+        {% endfor %}
+    ];
+</script>
 {% endblock %}
