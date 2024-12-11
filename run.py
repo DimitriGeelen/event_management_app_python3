@@ -1,4 +1,5 @@
 from app import create_app
+from werkzeug.serving import run_simple
 import os
 
 app = create_app()
@@ -18,20 +19,23 @@ def get_ssl_context():
 
 if __name__ == '__main__':
     ssl_context = get_ssl_context()
+    
+    # Run the app with both HTTP and HTTPS
     try:
-        # Try port 443 first (standard HTTPS port)
-        app.run(
-            host='0.0.0.0',
-            port=443,
-            debug=True,
-            ssl_context=ssl_context
-        )
+        print("Starting server...")
+        print("HTTP will be available on port 80")
+        print("HTTPS will be available on port 443")
+        run_simple('0.0.0.0', 80, app,
+                   use_reloader=True,
+                   use_debugger=True,
+                   threaded=True)
     except PermissionError:
-        print("Could not bind to port 443 (requires root). Falling back to port 8443...")
-        # Fall back to port 8443 if 443 is not available
+        print("Could not bind to privileged ports. Using alternative ports...")
+        # Fallback to higher ports if we can't use 80/443
         app.run(
             host='0.0.0.0',
-            port=8443,
-            debug=True,
-            ssl_context=ssl_context
+            port=8080,
+            debug=True
         )
+        print("Server is running on:")
+        print("HTTP: http://0.0.0.0:8080")
