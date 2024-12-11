@@ -86,6 +86,54 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize map if it exists on the page
     const mapElement = document.getElementById('map');
     if (mapElement) {
-        // Map initialization code...
+        // Initialize the map with Netherlands center
+        const map = L.map('map').setView([52.3676, 4.9041], 7);
+        
+        // Add the OpenStreetMap tiles
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+
+        // Create a marker cluster group
+        const markers = L.markerClusterGroup();
+
+        // Add markers for all events with coordinates
+        if (typeof eventLocations !== 'undefined' && eventLocations.length > 0) {
+            const bounds = [];
+            eventLocations.forEach(event => {
+                if (event.latitude && event.longitude) {
+                    const marker = L.marker([event.latitude, event.longitude])
+                        .bindPopup(`
+                            <div class="event-popup">
+                                <h5>${event.title}</h5>
+                                <p><i class="fas fa-map-marker-alt"></i> ${event.location}</p>
+                                <p><i class="fas fa-clock"></i> ${event.start}</p>
+                            </div>
+                        `);
+                    markers.addLayer(marker);
+                    bounds.push([event.latitude, event.longitude]);
+                }
+            });
+
+            // Add the marker cluster group to the map
+            map.addLayer(markers);
+
+            // Fit the map to show all markers if there are any
+            if (bounds.length > 0) {
+                map.fitBounds(bounds, { padding: [50, 50] });
+            }
+        }
+
+        // Add fullscreen control
+        map.addControl(new L.Control.Fullscreen());
+
+        // Add locate control
+        L.control.locate({
+            position: 'topleft',
+            strings: {
+                title: 'Show me where I am'
+            }
+        }).addTo(map);
     }
 });
