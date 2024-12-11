@@ -11,6 +11,42 @@ bp = Blueprint('main', __name__)
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in {'pdf', 'png', 'jpg', 'jpeg'}
 
+def geocode_address(location_string):
+    """Geocode an address using Nominatim"""
+    try:
+        url = 'https://nominatim.openstreetmap.org/search'
+        headers = {'User-Agent': current_app.config.get('NOMINATIM_USER_AGENT', 'EventManagementApp/1.0')}
+        params = {
+            'q': location_string,
+            'format': 'json',
+            'limit': 1
+        }
+        
+        response = requests.get(url, headers=headers, params=params)
+        response.raise_for_status()
+        data = response.json()
+        
+        if data and len(data) > 0:
+            return float(data[0]['lat']), float(data[0]['lon'])
+        return None, None
+    except Exception as e:
+        current_app.logger.error(f'Geocoding error: {str(e)}')
+        return None, None
+
+def get_full_address(event):
+    """Combine address components into a single string"""
+    address_parts = []
+    if event.location_name:
+        address_parts.append(event.location_name)
+    if event.street_name:
+        street = event.street_name
+        if event.street_number:
+            street += f' {event.street_number}'
+        address_parts.append(street)
+    if event.postal_code:
+        address_parts.append(event.postal_code)
+    return ', '.join(address_parts)
+
 @bp.route('/')
 def index():
     events = Event.query.order_by(Event.start_datetime).all()
@@ -30,6 +66,11 @@ def create_event():
             street_number=form.street_number.data,
             postal_code=form.postal_code.data
         )
+        
+        # Geocode the address
+        address = get_full_address(event)
+        if address:
+            event.latitude, event.longitude = geocode_address(address)
         
         if form.file.data:
             file = form.file.data
@@ -59,6 +100,11 @@ def edit_event(id):
         event.street_name = form.street_name.data
         event.street_number = form.street_number.data
         event.postal_code = form.postal_code.data
+        
+        # Update geocoding
+        address = get_full_address(event)
+        if address:
+            event.latitude, event.longitude = geocode_address(address)
         
         if form.file.data:
             file = form.file.data
@@ -111,12 +157,12 @@ def location_suggestions():
     
     # Headers including User-Agent as required by OpenStreetMap
     headers = {
-        'User-Agent': 'EventManagementApp/1.0 (contact@yourdomain.com)'
+        'User-Agent': current_app.config.get('NOMINATIM_USER_AGENT', 'EventManagementApp/1.0')
     }
     
     try:
         response = requests.get(url, params=params, headers=headers)
-        response.raise_for_status()  # Raise an exception for bad status codes
+        response.raise_for_status()
         results = response.json()
         
         suggestions = []
@@ -126,7 +172,9 @@ def location_suggestions():
                 'address': result.get('display_name', ''),
                 'postal_code': address.get('postcode', ''),
                 'street': address.get('road', ''),
-                'house_number': address.get('house_number', '')
+                'house_number': address.get('house_number', ''),
+                'latitude': result.get('lat'),
+                'longitude': result.get('lon')
             }
             suggestions.append(suggestion)
         
