@@ -55,6 +55,12 @@
             <div class="mb-3">
                 <label for="file" class="form-label">Upload File (Images or PDF)</label>
                 {{ form.file(class="form-control") }}
+                {% if form.file.errors %}
+                    {% for error in form.file.errors %}
+                        <div class="text-danger">{{ error }}</div>
+                    {% endfor %}
+                {% endif %}
+                <small class="text-muted">Allowed file types: JPG, JPEG, PNG, PDF</small>
             </div>
             
             <button type="submit" class="btn btn-primary">Create Event</button>
