@@ -18,9 +18,20 @@ def get_ssl_context():
 
 if __name__ == '__main__':
     ssl_context = get_ssl_context()
-    app.run(
-        host='0.0.0.0',
-        port=5000,
-        debug=True,
-        ssl_context=ssl_context
-    )
+    try:
+        # Try port 443 first (standard HTTPS port)
+        app.run(
+            host='0.0.0.0',
+            port=443,
+            debug=True,
+            ssl_context=ssl_context
+        )
+    except PermissionError:
+        print("Could not bind to port 443 (requires root). Falling back to port 8443...")
+        # Fall back to port 8443 if 443 is not available
+        app.run(
+            host='0.0.0.0',
+            port=8443,
+            debug=True,
+            ssl_context=ssl_context
+        )
