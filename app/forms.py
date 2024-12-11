@@ -1,7 +1,12 @@
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileAllowed
-from wtforms import StringField, TextAreaField, DateTimeLocalField
-from wtforms.validators import DataRequired, Optional
+from wtforms import StringField, TextAreaField, DateTimeLocalField, SelectField, SubmitField
+from wtforms.validators import DataRequired, Optional, Length
+
+class CategoryForm(FlaskForm):
+    name = StringField('Category Name', validators=[DataRequired(), Length(max=50)])
+    description = TextAreaField('Description', validators=[Optional(), Length(max=200)])
+    submit = SubmitField('Save Category')
 
 class EventForm(FlaskForm):
     title = StringField('Title', validators=[DataRequired()])
@@ -16,6 +21,7 @@ class EventForm(FlaskForm):
     street_name = StringField('Street Name', validators=[Optional()])
     street_number = StringField('Street Number', validators=[Optional()])
     postal_code = StringField('Postal Code', validators=[Optional()])
+    category_id = SelectField('Category', coerce=int, validators=[Optional()])
     file = FileField('Upload File', validators=[
         Optional(),
         FileAllowed(['jpg', 'jpeg', 'png', 'pdf'], 'Only images and PDF files are allowed!')
