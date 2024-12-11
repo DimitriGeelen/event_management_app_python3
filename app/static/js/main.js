@@ -63,42 +63,78 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Map initialization
     if (document.getElementById('map')) {
+        // Initialize the map with clustering support
         const map = L.map('map').setView([52.3676, 4.9041], 7);  // Default to Netherlands
         
+        // Add the base map layer
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '© OpenStreetMap contributors'
         }).addTo(map);
 
-        // Add markers for each event
-        if (typeof eventLocations !== 'undefined' && eventLocations.length > 0) {
-            const markers = [];
-            const geocodePromises = eventLocations.map(event => {
-                return fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(event.location)}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data && data.length > 0) {
-                            const marker = L.marker([data[0].lat, data[0].lon])
-                                .bindPopup(`
-                                    <strong>${event.title}</strong><br>
-                                    ${event.location}<br>
-                                    <em>Starts: ${event.start}</em>
-                                `)
-                                .addTo(map);
-                            markers.push(marker);
-                            return [parseFloat(data[0].lat), parseFloat(data[0].lon)];
-                        }
-                    })
-                    .catch(error => console.error('Error geocoding:', error));
-            });
+        // Add scale control
+        L.control.scale().addTo(map);
 
-            // After all markers are added, fit the map to show all markers
-            Promise.all(geocodePromises).then(coordinates => {
-                const validCoordinates = coordinates.filter(coord => coord);
-                if (validCoordinates.length > 0) {
-                    const bounds = L.latLngBounds(validCoordinates);
-                    map.fitBounds(bounds, { padding: [50, 50] });
+        // Create a marker cluster group
+        const markers = L.markerClusterGroup({
+            spiderfyOnMaxZoom: true,
+            showCoverageOnHover: true,
+            zoomToBoundsOnClick: true
+        });
+
+        // Custom popup style
+        const popupOptions = {
+            maxWidth: 300,
+            className: 'custom-popup'
+        };
+
+        // Add markers for events with coordinates
+        if (typeof eventLocations !== 'undefined' && eventLocations.length > 0) {
+            const bounds = [];
+            
+            eventLocations.forEach(event => {
+                if (event.latitude && event.longitude) {
+                    const coords = [event.latitude, event.longitude];
+                    bounds.push(coords);
+
+                    // Create marker with custom icon
+                    const marker = L.marker(coords, {
+                        title: event.title,
+                        riseOnHover: true
+                    });
+
+                    // Create popup content
+                    const popupContent = `
+                        <div class="event-popup">
+                            <h5>${event.title}</h5>
+                            <p><i class="fas fa-map-marker-alt"></i> ${event.location}</p>
+                            <p><i class="fas fa-clock"></i> ${event.start}</p>
+                        </div>
+                    `;
+
+                    marker.bindPopup(popupContent, popupOptions);
+                    markers.addLayer(marker);
                 }
             });
+
+            // Add the marker cluster group to the map
+            map.addLayer(markers);
+
+            // Fit map to show all markers if there are any
+            if (bounds.length > 0) {
+                const padded = L.latLngBounds(bounds).pad(0.1);  // Add 10% padding
+                map.fitBounds(padded);
+            }
         }
+
+        // Add fullscreen control
+        map.addControl(new L.Control.Fullscreen());
+
+        // Add locate control
+        L.control.locate({
+            position: 'topleft',
+            strings: {
+                title: 'Show me where I am'
+            }
+        }).addTo(map);
     }
 });
