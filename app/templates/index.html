@@ -65,7 +65,7 @@
     </div>
 </div>
 
-<!-- Results Section -->
+<!-- Events List -->
 <div class="row">
     {% if not events %}
     <div class="col">
@@ -140,13 +140,13 @@
     var eventLocations = [
         {% for event in events %}
             {% if event.latitude and event.longitude %}
-            {
-                title: "{{ event.title }}",
-                location: "{% if event.location_name %}{{ event.location_name }}{% endif %}{% if event.street_name %}, {{ event.street_name }} {{ event.street_number }}{% endif %}{% if event.postal_code %}, {{ event.postal_code }}{% endif %}",
-                start: "{{ event.start_datetime.strftime('%Y-%m-%d %H:%M') }}",
-                latitude: {{ event.latitude }},
-                longitude: {{ event.longitude }}
-            },
+                {
+                    title: "{{ event.title|safe }}",
+                    location: "{% if event.location_name %}{{ event.location_name|safe }}{% endif %}{% if event.street_name %}, {{ event.street_name|safe }} {{ event.street_number|safe }}{% endif %}{% if event.postal_code %}, {{ event.postal_code|safe }}{% endif %}",
+                    start: "{{ event.start_datetime.strftime('%Y-%m-%d %H:%M') }}",
+                    latitude: {{ event.latitude }},
+                    longitude: {{ event.longitude }}
+                }{% if not loop.last %},{% endif %}
             {% endif %}
         {% endfor %}
     ];
