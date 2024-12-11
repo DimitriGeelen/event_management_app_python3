@@ -36,6 +36,11 @@
         }
         .card {
             overflow: hidden;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            transition: box-shadow 0.3s ease;
+        }
+        .card:hover {
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
         }
         #map {
             border-radius: 8px;
@@ -57,6 +62,10 @@
             margin-right: 5px;
             color: #3498db;
         }
+        .nav-link.active {
+            background-color: rgba(255,255,255,0.1);
+            border-radius: 4px;
+        }
     </style>
 </head>
 <body>
@@ -69,14 +78,22 @@
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav">
+                <ul class="navbar-nav me-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('main.index') }}">
+                        <a class="nav-link{{ ' active' if request.endpoint == 'main.index' }}" 
+                           href="{{ url_for('main.index') }}">
                             <i class="fas fa-home"></i> Home
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('main.create_event') }}">
+                        <a class="nav-link{{ ' active' if request.endpoint == 'main.categories' }}" 
+                           href="{{ url_for('main.categories') }}">
+                            <i class="fas fa-tags"></i> Categories
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link{{ ' active' if request.endpoint == 'main.create_event' }}" 
+                           href="{{ url_for('main.create_event') }}">
                             <i class="fas fa-plus"></i> Create Event
                         </a>
                     </li>
