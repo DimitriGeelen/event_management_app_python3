@@ -1,4 +1,4 @@
-/* Custom styles */
+/* Location suggestions styling */
 .location-suggestions {
     position: absolute;
     z-index: 1000;
@@ -8,27 +8,60 @@
     max-height: 200px;
     overflow-y: auto;
     width: 100%;
+    margin-top: 2px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 
 .location-suggestion-item {
     padding: 8px 12px;
     cursor: pointer;
+    border-bottom: 1px solid #eee;
+    transition: background-color 0.2s ease;
+}
+
+.location-suggestion-item:last-child {
+    border-bottom: none;
 }
 
 .location-suggestion-item:hover {
     background-color: #f8f9fa;
 }
 
+/* Form styling */
 .form-group {
     position: relative;
     margin-bottom: 1rem;
 }
 
+/* Loading indicator */
+.loading-indicator {
+    padding: 8px 12px;
+    text-align: center;
+    color: #666;
+}
+
+/* Error message */
+.error-message {
+    padding: 8px 12px;
+    text-align: center;
+    color: #dc3545;
+    background-color: #f8d7da;
+    border-radius: 4px;
+}
+
+/* Card styling */
 .card {
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: box-shadow 0.3s ease;
 }
 
 .card:hover {
     box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-    transition: box-shadow 0.3s ease;
+}
+
+/* Map container */
+#map {
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
 }
