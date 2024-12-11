@@ -15,6 +15,17 @@
             <div class="card-body">
                 <h5 class="card-title">Event Locations</h5>
                 <div id="map" style="height: 400px; width: 100%;"></div>
+                <!-- Debug info -->
+                <div class="small text-muted mt-2">
+                    <strong>Debug Info:</strong>
+                    <ul>
+                    {% for event in events %}
+                        <li>{{ event.title }}: 
+                            Location="{{ event.location_name }} {{ event.street_name }} {{ event.street_number }} {{ event.postal_code }}"
+                            Coords=[{{ event.latitude }}, {{ event.longitude }}]</li>
+                    {% endfor %}
+                    </ul>
+                </div>
             </div>
         </div>
     </div>
@@ -53,9 +64,13 @@
                 {% endif %}
                 
                 <div class="btn-group mt-3">
-                    <a href="{{ url_for('main.edit_event', id=event.id) }}" class="btn btn-warning">Edit</a>
+                    <a href="{{ url_for('main.edit_event', id=event.id) }}" class="btn btn-warning">
+                        <i class="fas fa-edit"></i> Edit
+                    </a>
                     <form action="{{ url_for('main.delete_event', id=event.id) }}" method="POST" class="d-inline">
-                        <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this event?')">Delete</button>
+                        <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this event?')">
+                            <i class="fas fa-trash"></i> Delete
+                        </button>
                     </form>
                 </div>
             </div>
@@ -68,14 +83,17 @@
 <script>
     var eventLocations = [
         {% for event in events %}
-            {% if event.location_name or event.street_name %}
+            {% if event.latitude and event.longitude %}
             {
                 title: "{{ event.title }}",
                 location: "{% if event.location_name %}{{ event.location_name }}{% endif %}{% if event.street_name %}, {{ event.street_name }} {{ event.street_number }}{% endif %}{% if event.postal_code %}, {{ event.postal_code }}{% endif %}",
-                start: "{{ event.start_datetime.strftime('%Y-%m-%d %H:%M') }}"
+                start: "{{ event.start_datetime.strftime('%Y-%m-%d %H:%M') }}",
+                latitude: {{ event.latitude }},
+                longitude: {{ event.longitude }}
             },
             {% endif %}
         {% endfor %}
     ];
+    console.log('Event Locations:', eventLocations);
 </script>
 {% endblock %}
