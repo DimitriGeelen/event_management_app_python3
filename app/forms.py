@@ -1,7 +1,7 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, TextAreaField, DateTimeLocalField, FileField
+from flask_wtf.file import FileField, FileAllowed
+from wtforms import StringField, TextAreaField, DateTimeLocalField
 from wtforms.validators import DataRequired, Optional
-from flask_wtf.file import FileAllowed
 
 class EventForm(FlaskForm):
     title = StringField('Title', validators=[DataRequired()])
@@ -18,5 +18,5 @@ class EventForm(FlaskForm):
     postal_code = StringField('Postal Code', validators=[Optional()])
     file = FileField('Upload File', validators=[
         Optional(),
-        FileAllowed(['jpg', 'png', 'pdf'], 'Images and PDFs only!')
+        FileAllowed(['jpg', 'jpeg', 'png', 'pdf'], 'Only images and PDF files are allowed!')
     ])
