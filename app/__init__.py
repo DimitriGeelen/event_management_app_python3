@@ -35,14 +35,22 @@ def create_app():
             'stackpath.bootstrapcdn.com',
             'cdn.jsdelivr.net',
             'cdnjs.cloudflare.com',
+            'unpkg.com',
         ],
-        'img-src': ['*', 'data:', '\'self\''],
+        'img-src': [
+            '*',
+            'data:',
+            '\'self\'',
+            'tile.openstreetmap.org',
+            '*.tile.openstreetmap.org',
+        ],
         'script-src': [
             '\'self\'',
             '\'unsafe-inline\'',
             '\'unsafe-eval\'',
             'cdn.jsdelivr.net',
             'cdnjs.cloudflare.com',
+            'unpkg.com',
         ],
         'style-src': [
             '\'self\'',
@@ -50,8 +58,15 @@ def create_app():
             'cdn.jsdelivr.net',
             'cdnjs.cloudflare.com',
             'fonts.googleapis.com',
+            'unpkg.com',
         ],
         'font-src': ['*', 'data:', '\'self\''],
+        'connect-src': [
+            '\'self\'',
+            'nominatim.openstreetmap.org',
+            '*.tile.openstreetmap.org',
+        ],
+        'worker-src': ['\'self\'', 'blob:'],
     }
     
     Talisman(app,
