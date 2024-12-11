@@ -107,6 +107,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         .bindPopup(`
                             <div class="event-popup">
                                 <h5>${event.title}</h5>
+                                <p><i class="fas fa-tag"></i> ${event.category}</p>
                                 <p><i class="fas fa-map-marker-alt"></i> ${event.location}</p>
                                 <p><i class="fas fa-clock"></i> ${event.start}</p>
                             </div>
@@ -133,7 +134,13 @@ document.addEventListener('DOMContentLoaded', function() {
             position: 'topleft',
             strings: {
                 title: 'Show me where I am'
+            },
+            locateOptions: {
+                maxZoom: 15
             }
         }).addTo(map);
+
+        // Add scale control
+        L.control.scale().addTo(map);
     }
 });
