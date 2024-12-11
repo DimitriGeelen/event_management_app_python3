@@ -27,10 +27,14 @@ def geocode_address(location_string):
         data = response.json()
         
         if data and len(data) > 0:
-            return float(data[0]['lat']), float(data[0]['lon'])
+            lat = float(data[0]['lat'])
+            lon = float(data[0]['lon'])
+            print(f"Geocoding result for {location_string}: lat={lat}, lon={lon}")
+            return lat, lon
+        print(f"No geocoding results for {location_string}")
         return None, None
     except Exception as e:
-        current_app.logger.error(f'Geocoding error: {str(e)}')
+        print(f"Geocoding error for {location_string}: {str(e)}")
         return None, None
 
 def get_full_address(event):
@@ -50,6 +54,9 @@ def get_full_address(event):
 @bp.route('/')
 def index():
     events = Event.query.order_by(Event.start_datetime).all()
+    # Print event coordinates for debugging
+    for event in events:
+        print(f"Event {event.title}: lat={event.latitude}, lon={event.longitude}")
     return render_template('index.html', events=events)
 
 @bp.route('/event/new', methods=['GET', 'POST'])
@@ -69,8 +76,10 @@ def create_event():
         
         # Geocode the address
         address = get_full_address(event)
+        print(f"Attempting to geocode address: {address}")
         if address:
             event.latitude, event.longitude = geocode_address(address)
+            print(f"Got coordinates: lat={event.latitude}, lon={event.longitude}")
         
         if form.file.data:
             file = form.file.data
@@ -103,8 +112,10 @@ def edit_event(id):
         
         # Update geocoding
         address = get_full_address(event)
+        print(f"Attempting to geocode address: {address}")
         if address:
             event.latitude, event.longitude = geocode_address(address)
+            print(f"Got coordinates: lat={event.latitude}, lon={event.longitude}")
         
         if form.file.data:
             file = form.file.data
