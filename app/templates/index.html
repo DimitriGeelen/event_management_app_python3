@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block content %}
-<!-- Debug info at the top of the page -->
+<!-- Debug info -->
 <div class="alert alert-info">
     <h6>Debug Info:</h6>
     <div style="font-family: monospace; font-size: 12px;">
@@ -82,29 +82,12 @@
         <div class="card">
             <div class="card-body">
                 <h5 class="card-title">Event Locations</h5>
-                <div id="map" style="height: 400px; width: 100%;"></div>
+                <div id="map" style="height: 400px; width: 100%;" 
+                     data-events='{{ events|map(attribute="to_dict")|list|tojson|safe }}'></div>
             </div>
         </div>
     </div>
 </div>
-
-<!-- Print eventLocations data for debugging -->
-<script>
-    var eventLocations = [
-        {% for event in events %}
-            {% if event.latitude and event.longitude %}
-                {
-                    title: "{{ event.title|safe }}",
-                    location: "{% if event.location_name %}{{ event.location_name|safe }}{% endif %}{% if event.street_name %}, {{ event.street_name|safe }} {{ event.street_number|safe }}{% endif %}{% if event.postal_code %}, {{ event.postal_code|safe }}{% endif %}",
-                    start: "{{ event.start_datetime.strftime('%Y-%m-%d %H:%M') }}",
-                    latitude: "{{ event.latitude }}",
-                    longitude: "{{ event.longitude }}"
-                }{% if not loop.last %},{% endif %}
-            {% endif %}
-        {% endfor %}
-    ];
-    console.log('Event Locations:', eventLocations);
-</script>
 
 <!-- Events List -->
 <div class="row">
