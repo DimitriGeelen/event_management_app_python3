@@ -1,6 +1,19 @@
 {% extends "base.html" %}
 
 {% block content %}
+<!-- Debug info at the top of the page -->
+<div class="alert alert-info">
+    <h6>Debug Info:</h6>
+    <div style="font-family: monospace; font-size: 12px;">
+    {% for event in events %}
+        {% if event.latitude and event.longitude %}
+        Event: {{ event.title }} - 
+        Location: [{{ event.latitude }}, {{ event.longitude }}]<br>
+        {% endif %}
+    {% endfor %}
+    </div>
+</div>
+
 <div class="row mb-4">
     <div class="col-md-8">
         <h1>Events</h1>
@@ -75,6 +88,24 @@
     </div>
 </div>
 
+<!-- Print eventLocations data for debugging -->
+<script>
+    var eventLocations = [
+        {% for event in events %}
+            {% if event.latitude and event.longitude %}
+                {
+                    title: "{{ event.title|safe }}",
+                    location: "{% if event.location_name %}{{ event.location_name|safe }}{% endif %}{% if event.street_name %}, {{ event.street_name|safe }} {{ event.street_number|safe }}{% endif %}{% if event.postal_code %}, {{ event.postal_code|safe }}{% endif %}",
+                    start: "{{ event.start_datetime.strftime('%Y-%m-%d %H:%M') }}",
+                    latitude: "{{ event.latitude }}",
+                    longitude: "{{ event.longitude }}"
+                }{% if not loop.last %},{% endif %}
+            {% endif %}
+        {% endfor %}
+    ];
+    console.log('Event Locations:', eventLocations);
+</script>
+
 <!-- Events List -->
 <div class="row">
     {% if not events %}
@@ -122,6 +153,9 @@
                     {% if event.location_name %}{{ event.location_name }}<br>{% endif %}
                     {% if event.street_name %}{{ event.street_name }} {{ event.street_number }}<br>{% endif %}
                     {% if event.postal_code %}{{ event.postal_code }}{% endif %}
+                    {% if event.latitude and event.longitude %}
+                        <br><small class="text-muted">[{{ event.latitude }}, {{ event.longitude }}]</small>
+                    {% endif %}
                 </p>
                 {% endif %}
                 
@@ -152,23 +186,4 @@
     </div>
     {% endfor %}
 </div>
-
-<!-- Add event data for the map -->
-<script>
-    console.log('Setting up event locations...');
-    var eventLocations = [
-        {% for event in events %}
-            {% if event.latitude and event.longitude %}
-                {
-                    title: "{{ event.title|safe }}",
-                    location: "{% if event.location_name %}{{ event.location_name|safe }}{% endif %}{% if event.street_name %}, {{ event.street_name|safe }} {{ event.street_number|safe }}{% endif %}{% if event.postal_code %}, {{ event.postal_code|safe }}{% endif %}",
-                    start: "{{ event.start_datetime.strftime('%Y-%m-%d %H:%M') }}",
-                    latitude: {{ event.latitude }},
-                    longitude: {{ event.longitude }}
-                },
-            {% endif %}
-        {% endfor %}
-    ];
-    console.log('Event locations:', eventLocations);
-</script>
 {% endblock %}
