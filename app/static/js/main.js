@@ -50,39 +50,14 @@ function initializeMap() {
                     
                     console.log(`Adding marker for "${event.title}" at [${lat}, ${lon}]`);
                     
-                    // Create custom icon
-                    const eventIcon = L.divIcon({
-                        className: 'custom-div-icon',
-                        html: `<div style="background-color: #3498db; 
-                                    width: 12px; 
-                                    height: 12px; 
-                                    border-radius: 50%; 
-                                    border: 2px solid #fff;
-                                    box-shadow: 0 0 4px rgba(0,0,0,0.3);"></div>`,
-                        iconSize: [12, 12],
-                        iconAnchor: [6, 6]
-                    });
-
                     // Create marker
-                    const marker = L.marker([lat, lon], {icon: eventIcon});
-                    
-                    // Build location string
-                    const locationParts = [];
-                    if (event.location_name) locationParts.push(event.location_name);
-                    if (event.street_name) {
-                        let street = event.street_name;
-                        if (event.street_number) street += ' ' + event.street_number;
-                        locationParts.push(street);
-                    }
-                    if (event.postal_code) locationParts.push(event.postal_code);
+                    const marker = L.marker([lat, lon]);
                     
                     // Create popup content
                     const popupContent = `
                         <div class="event-popup">
                             <h5>${escapeHtml(event.title)}</h5>
-                            ${locationParts.length > 0 ? 
-                                `<p><i class="fas fa-map-marker-alt"></i> ${escapeHtml(locationParts.join(', '))}</p>` : 
-                                ''}
+                            ${event.location ? `<p><i class="fas fa-map-marker-alt"></i> ${escapeHtml(event.location)}</p>` : ''}
                             <p><i class="fas fa-clock"></i> ${escapeHtml(event.start_datetime)}</p>
                         </div>
                     `;
@@ -220,7 +195,6 @@ function setupLocationSuggestions() {
     });
 }
 
-// Helper function to escape HTML and prevent XSS
 function escapeHtml(unsafe) {
     if (!unsafe) return '';
     return unsafe
