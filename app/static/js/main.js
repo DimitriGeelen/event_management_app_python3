@@ -1,5 +1,107 @@
 document.addEventListener('DOMContentLoaded', function() {
-    // Initialize map if it exists on the page
+    // Location suggestions functionality
+    const locationInput = document.querySelector('input[name="location_name"]');
+    const streetInput = document.querySelector('input[name="street_name"]');
+    const streetNumberInput = document.querySelector('input[name="street_number"]');
+    const postalCodeInput = document.querySelector('input[name="postal_code"]');
+    
+    if (locationInput) {
+        // Create suggestion container
+        const suggestionContainer = document.createElement('div');
+        suggestionContainer.className = 'suggestion-container';
+        suggestionContainer.style.cssText = `
+            position: absolute;
+            max-height: 200px;
+            overflow-y: auto;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: none;
+            z-index: 1000;
+            width: 100%;
+        `;
+        locationInput.parentElement.style.position = 'relative';
+        locationInput.parentElement.appendChild(suggestionContainer);
+
+        // Add input event listener
+        let timeoutId = null;
+        locationInput.addEventListener('input', function(e) {
+            const query = e.target.value.trim();
+            
+            // Clear previous timeout
+            if (timeoutId) {
+                clearTimeout(timeoutId);
+            }
+
+            // Set new timeout to prevent too many requests
+            timeoutId = setTimeout(async () => {
+                if (query.length < 3) {
+                    suggestionContainer.style.display = 'none';
+                    return;
+                }
+
+                try {
+                    console.log('Fetching suggestions for:', query);
+                    const response = await fetch(`/api/location-suggestions?query=${encodeURIComponent(query)}`);
+                    if (!response.ok) throw new Error('Network response was not ok');
+                    const suggestions = await response.json();
+                    console.log('Received suggestions:', suggestions);
+
+                    // Clear previous suggestions
+                    suggestionContainer.innerHTML = '';
+
+                    if (suggestions.length > 0) {
+                        suggestions.forEach(suggestion => {
+                            const div = document.createElement('div');
+                            div.className = 'suggestion-item';
+                            div.style.cssText = `
+                                padding: 8px 12px;
+                                cursor: pointer;
+                                border-bottom: 1px solid #eee;
+                            `;
+                            div.textContent = suggestion.address;
+                            div.addEventListener('mouseover', () => {
+                                div.style.backgroundColor = '#f0f0f0';
+                            });
+                            div.addEventListener('mouseout', () => {
+                                div.style.backgroundColor = 'white';
+                            });
+                            div.addEventListener('click', () => {
+                                locationInput.value = suggestion.address;
+                                if (streetInput && suggestion.street) {
+                                    streetInput.value = suggestion.street;
+                                }
+                                if (streetNumberInput && suggestion.house_number) {
+                                    streetNumberInput.value = suggestion.house_number;
+                                }
+                                if (postalCodeInput && suggestion.postal_code) {
+                                    postalCodeInput.value = suggestion.postal_code;
+                                }
+                                suggestionContainer.style.display = 'none';
+                            });
+                            suggestionContainer.appendChild(div);
+                        });
+                        suggestionContainer.style.display = 'block';
+                    } else {
+                        suggestionContainer.style.display = 'none';
+                    }
+                } catch (error) {
+                    console.error('Error fetching suggestions:', error);
+                    suggestionContainer.style.display = 'none';
+                }
+            }, 300); // 300ms delay
+        });
+
+        // Hide suggestions when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!locationInput.contains(e.target) && !suggestionContainer.contains(e.target)) {
+                suggestionContainer.style.display = 'none';
+            }
+        });
+    }
+
+    // Map initialization code
     const mapElement = document.getElementById('map');
     if (mapElement) {
         console.log('Initializing map...');
