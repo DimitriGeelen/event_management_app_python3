@@ -1,5 +1,6 @@
 from app import db
 from datetime import datetime
+from flask.json import JSONEncoder
 
 class Category(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -44,8 +45,8 @@ class Event(db.Model):
             'id': self.id,
             'title': self.title,
             'description': self.description,
-            'start_datetime': self.start_datetime.strftime('%Y-%m-%d %H:%M'),
-            'end_datetime': self.end_datetime.strftime('%Y-%m-%d %H:%M'),
+            'start_datetime': self.start_datetime.strftime('%Y-%m-%d %H:%M') if self.start_datetime else None,
+            'end_datetime': self.end_datetime.strftime('%Y-%m-%d %H:%M') if self.end_datetime else None,
             'location_name': self.location_name,
             'street_name': self.street_name,
             'street_number': self.street_number,
