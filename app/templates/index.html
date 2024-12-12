@@ -82,8 +82,14 @@
         <div class="card">
             <div class="card-body">
                 <h5 class="card-title">Event Locations</h5>
+                {% set event_data = [] %}
+                {% for event in events %}
+                    {% if event.latitude and event.longitude %}
+                        {% do event_data.append(event.to_dict()) %}
+                    {% endif %}
+                {% endfor %}
                 <div id="map" style="height: 400px; width: 100%;" 
-                     data-events='{{ events|map(attribute="to_dict")|list|tojson|safe }}'></div>
+                     data-events='{{ event_data|tojson|safe }}'></div>
             </div>
         </div>
     </div>
