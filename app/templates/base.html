@@ -16,9 +16,9 @@
           integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
           crossorigin=""/>
     
-    <!-- Leaflet MarkerCluster CSS -->
-    <link rel="stylesheet" href="https://unpkg.com/markercluster@latest/dist/MarkerCluster.css">
-    <link rel="stylesheet" href="https://unpkg.com/markercluster@latest/dist/MarkerCluster.Default.css">
+    <!-- Leaflet MarkerCluster CSS - Updated URLs -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css">
     
     <!-- Custom CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
@@ -38,17 +38,27 @@
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             min-height: 400px;
         }
+        .event-popup {
+            min-width: 200px;
+            max-width: 300px;
+            padding: 10px;
+        }
         .event-popup h5 {
             margin-bottom: 10px;
             color: #2c3e50;
+            font-size: 1.1em;
         }
         .event-popup p {
             margin: 5px 0;
             color: #34495e;
+            font-size: 0.9em;
         }
         .event-popup i {
             margin-right: 5px;
             color: #3498db;
+        }
+        .leaflet-popup-content-wrapper {
+            border-radius: 8px;
         }
     </style>
 </head>
@@ -71,6 +81,11 @@
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('main.create_event') }}">
                             <i class="fas fa-plus"></i> Create Event
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('main.categories') }}">
+                            <i class="fas fa-tags"></i> Categories
                         </a>
                     </li>
                 </ul>
@@ -110,8 +125,8 @@
             integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
             crossorigin=""></script>
     
-    <!-- Leaflet MarkerCluster JS -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/leaflet.markercluster.js"></script>
+    <!-- Leaflet MarkerCluster JS - Updated URL -->
+    <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
     
     <!-- Custom JS -->
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
