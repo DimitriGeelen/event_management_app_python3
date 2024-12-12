@@ -35,12 +35,25 @@ echo "Event Management Application Installation Script"
 echo "================================================================="
 echo
 
+# Check if running on Ubuntu 24.04
+if [ -f /etc/os-release ]; then
+    . /etc/os-release
+    if [ "$VERSION_ID" != "24.04" ]; then
+        print_warning "This script is designed for Ubuntu 24.04. You're running: $PRETTY_NAME"
+        read -p "Continue anyway? (y/N) " -n 1 -r
+        echo
+        if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+            exit 1
+        fi
+    fi
+fi
+
 # Update package list and install required packages
 print_status "Updating package list and installing required packages..."
 apt update
 check_status "Package list updated" "Failed to update package list"
 
-apt install -y python3-venv python3-pip
+apt install -y python3-venv python3-pip openssl
 check_status "Required packages installed" "Failed to install required packages"
 
 # Create and activate virtual environment
@@ -63,14 +76,15 @@ pip install -r requirements.txt
 check_status "Dependencies installed" "Failed to install dependencies"
 
 # Create necessary directories
-print_status "Creating upload directory..."
-mkdir -p app/static/uploads
-check_status "Upload directory created" "Failed to create upload directory"
-
-# Set correct permissions for uploads directory
-print_status "Setting correct permissions for uploads directory..."
+print_status "Creating directories..."
+mkdir -p app/static/uploads cert
 chmod 755 app/static/uploads
-check_status "Permissions set" "Failed to set permissions"
+check_status "Directories created" "Failed to create directories"
+
+# Generate SSL certificate
+print_status "Generating SSL certificate..."
+python3 generate_cert.py
+check_status "SSL certificate generated" "Failed to generate SSL certificate"
 
 # Initialize the database
 print_status "Initializing database..."
@@ -88,19 +102,32 @@ if [ ! -f .env ]; then
     check_status ".env file created with random secret key" "Failed to create .env file"
 fi
 
-# Configuration for LAN access
+# Configure firewall
 print_status "Checking firewall status..."
-if ufw status | grep -q "Status: active"; then
-    print_status "Configuring firewall to allow port 5000..."
-    ufw allow 5000/tcp
-    check_status "Firewall configured" "Failed to configure firewall"
+if command -v ufw >/dev/null 2>&1; then
+    if ufw status | grep -q "Status: active"; then
+        print_status "Configuring firewall to allow port 443..."
+        ufw allow 443/tcp
+        check_status "Firewall configured" "Failed to configure firewall"
+    else
+        print_warning "Firewall is not active. No configuration needed."
+    fi
 else
-    print_warning "Firewall is not active. No configuration needed."
+    print_warning "UFW is not installed. Skipping firewall configuration."
 fi
 
 # Display IP addresses
 echo "\nSystem IP Addresses:"
 ip -4 addr show | grep -oP '(?<=inet\s)\d+(\.\d+){3}' | grep -v '127.0.0.1'
+
+# Install optional sample data
+read -p "\nWould you like to install sample data? (y/N) " -n 1 -r
+echo
+if [[ $REPLY =~ ^[Yy]$ ]]; then
+    print_status "Installing sample data..."
+    python3 sample_data.py
+    check_status "Sample data installed" "Failed to install sample data"
+fi
 
 # Installation complete
 echo "\n================================================================="
@@ -108,12 +135,13 @@ print_status "Installation completed successfully!"
 echo "================================================================="
 echo -e "\nTo start the application:\n"
 echo "1. Make sure you're in the project directory"
-echo "2. Activate the virtual environment (if not already activated):"
-echo "   source .venv/bin/activate"
-echo "\n3. Start the application using either method:"
-echo "   Method 1: export FLASK_APP=app && flask run --host=0.0.0.0"
-echo "   Method 2: python3 run.py"
+echo "2. The virtual environment should already be activated"
+echo "   If not, run: source .venv/bin/activate"
+echo "\n3. Start the application:"
+echo "   python3 run.py"
 echo "\nAccess the application at:"
-echo "- Local: http://localhost:5000"
-echo "- LAN: http://<your-ip-address>:5000"
+echo "- Local: https://localhost"
+echo "- LAN: https://<your-ip-address>"
+echo "\nNote: Since we're using a self-signed certificate,"
+echo "you'll need to accept the security warning in your browser."
 echo "================================================================="
