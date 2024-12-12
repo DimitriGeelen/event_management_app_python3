@@ -3,6 +3,8 @@ from app.models import Category, Event
 from datetime import datetime, timedelta
 
 def create_sample_data():
+    print("Creating sample data...")
+    
     # Create sample categories
     categories = [
         {'name': 'Conference', 'description': 'Professional gatherings and conferences'},
@@ -19,80 +21,41 @@ def create_sample_data():
             'title': 'Python Developers Conference',
             'description': 'Annual conference for Python developers featuring workshops and networking',
             'category': 'Conference',
-            'location_name': 'Amsterdam Convention Center',
+            'location_name': 'Amsterdam RAI',
             'street_name': 'Europaplein',
             'street_number': '24',
             'postal_code': '1078 GZ',
             'start_offset': 5,  # days from now
             'duration': 2,  # days
-            'latitude': 52.3423,
-            'longitude': 4.8898
+            'latitude': 52.3376,
+            'longitude': 4.8900
         },
         {
-            'title': 'Web Development Workshop',
-            'description': 'Learn the latest web development technologies and frameworks',
-            'category': 'Workshop',
-            'location_name': 'Rotterdam Tech Hub',
-            'street_name': 'Westersingel',
-            'street_number': '12',
-            'postal_code': '3014 GN',
-            'start_offset': 3,
-            'duration': 1,
-            'latitude': 51.9225,
-            'longitude': 4.4792
-        },
-        {
-            'title': 'Tech Meetup Netherlands',
-            'description': 'Monthly meetup for tech enthusiasts and professionals',
+            'title': 'Tech Meetup Rotterdam',
+            'description': 'Monthly meetup for tech enthusiasts',
             'category': 'Meetup',
-            'location_name': 'Utrecht Science Park',
-            'street_name': 'Heidelberglaan',
-            'street_number': '8',
-            'postal_code': '3584 CS',
-            'start_offset': 7,
+            'location_name': 'Rotterdam Central Library',
+            'street_name': 'Hoogstraat',
+            'street_number': '110',
+            'postal_code': '3011 PV',
+            'start_offset': 3,
             'duration': 0.25,  # 6 hours
-            'latitude': 52.0853,
-            'longitude': 5.1779
-        },
-        {
-            'title': 'Classical Music Evening',
-            'description': 'An evening of classical masterpieces',
-            'category': 'Concert',
-            'location_name': 'Concertgebouw',
-            'street_name': 'Concertgebouwplein',
-            'street_number': '10',
-            'postal_code': '1071 LN',
-            'start_offset': 10,
-            'duration': 0.125,  # 3 hours
-            'latitude': 52.3564,
-            'longitude': 4.8790
-        },
-        {
-            'title': 'Modern Art Exhibition',
-            'description': 'Contemporary art exhibition featuring local artists',
-            'category': 'Exhibition',
-            'location_name': 'Groningen Museum',
-            'street_name': 'Museumeiland',
-            'street_number': '1',
-            'postal_code': '9711 ME',
-            'start_offset': 1,
-            'duration': 30,  # 30 days exhibition
-            'latitude': 53.2127,
-            'longitude': 6.5656
-        },
-        {
-            'title': 'Marathon Rotterdam',
-            'description': 'Annual Rotterdam Marathon event',
-            'category': 'Sport',
-            'location_name': 'Rotterdam Centrum',
-            'street_name': 'Coolsingel',
-            'street_number': '40',
-            'postal_code': '3011 AD',
-            'start_offset': 15,
-            'duration': 0.5,  # 12 hours
             'latitude': 51.9244,
             'longitude': 4.4777
         },
+        {
+            'title': 'Utrecht Jazz Festival',
+            'description': 'Annual jazz music festival',
+            'category': 'Concert',
+            'location_name': 'TivoliVredenburg',
+            'street_name': 'Vredenburgkade',
+            'street_number': '11',
+            'postal_code': '3511 WC',
+            'start_offset': 7,
+            'duration': 3,
+            'latitude': 52.0907,
+            'longitude': 5.1140
+        }
     ]
 
     with app.app_context():
@@ -133,6 +96,14 @@ def create_sample_data():
         print("Committing changes...")
         db.session.commit()
         print("Sample data created successfully!")
+
+        # Print created events for verification
+        print("\nCreated Events:")
+        events = Event.query.all()
+        for event in events:
+            print(f"Event: {event.title}")
+            print(f"Location: {event.location_name}, {event.street_name} {event.street_number}, {event.postal_code}")
+            print(f"Coordinates: lat={event.latitude}, lon={event.longitude}\n")
 
 if __name__ == '__main__':
     create_sample_data()
