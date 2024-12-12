@@ -28,18 +28,31 @@ class Event(db.Model):
     category_id = db.Column(db.Integer, db.ForeignKey('category.id'))
     
     def to_dict(self):
+        # Build location string
+        location_parts = []
+        if self.location_name:
+            location_parts.append(self.location_name)
+        if self.street_name:
+            street = self.street_name
+            if self.street_number:
+                street += f' {self.street_number}'
+            location_parts.append(street)
+        if self.postal_code:
+            location_parts.append(self.postal_code)
+            
         return {
             'id': self.id,
             'title': self.title,
             'description': self.description,
-            'start_datetime': self.start_datetime.isoformat(),
-            'end_datetime': self.end_datetime.isoformat(),
+            'start_datetime': self.start_datetime.strftime('%Y-%m-%d %H:%M'),
+            'end_datetime': self.end_datetime.strftime('%Y-%m-%d %H:%M'),
             'location_name': self.location_name,
             'street_name': self.street_name,
             'street_number': self.street_number,
             'postal_code': self.postal_code,
+            'location': ', '.join(location_parts),
             'file_path': self.file_path,
-            'latitude': self.latitude,
-            'longitude': self.longitude,
+            'latitude': float(self.latitude) if self.latitude is not None else None,
+            'longitude': float(self.longitude) if self.longitude is not None else None,
             'category': self.category.name if self.category else None
         }
