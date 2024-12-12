@@ -21,12 +21,13 @@ document.addEventListener('DOMContentLoaded', function() {
         const markers = L.markerClusterGroup({
             showCoverageOnHover: false,
             maxClusterRadius: 50,
-            spiderfyOnMaxZoom: true
+            spiderfyOnMaxZoom: true,
+            disableClusteringAtZoom: 19
         });
 
         // Add markers for events with coordinates
         if (typeof eventLocations !== 'undefined' && eventLocations.length > 0) {
-            console.log('Available event locations:', eventLocations);
+            console.log('Found event locations:', eventLocations);
             const bounds = [];
 
             eventLocations.forEach(event => {
@@ -48,17 +49,16 @@ document.addEventListener('DOMContentLoaded', function() {
                     const eventIcon = L.divIcon({
                         className: 'custom-div-icon',
                         html: `<div style="background-color: #3498db; 
-                                    width: 10px; 
-                                    height: 10px; 
+                                    width: 12px; 
+                                    height: 12px; 
                                     border-radius: 50%; 
                                     border: 2px solid #fff;
-                                    box-shadow: 0 0 4px rgba(0,0,0,0.3);">
-                            </div>`,
-                        iconSize: [10, 10],
-                        iconAnchor: [5, 5]
+                                    box-shadow: 0 0 4px rgba(0,0,0,0.3);"></div>`,
+                        iconSize: [12, 12],
+                        iconAnchor: [6, 6]
                     });
 
-                    // Create popup content with sanitized HTML
+                    // Create popup content
                     const popupContent = `
                         <div class="event-popup">
                             <h5>${escapeHtml(event.title)}</h5>
@@ -91,7 +91,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // Fit bounds if we have any valid markers
             if (bounds.length > 0) {
-                console.log(`Fitting bounds to ${bounds.length} markers:`, bounds);
+                console.log('Fitting bounds to markers:', bounds);
                 map.fitBounds(bounds, { 
                     padding: [50, 50],
                     maxZoom: 13 // Prevent too much zoom when single/few markers
