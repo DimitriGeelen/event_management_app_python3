@@ -1,10 +1,23 @@
 document.addEventListener('DOMContentLoaded', function() {
-    // Initialize map if it exists on the page
-    const mapElement = document.getElementById('map');
-    if (mapElement) {
-        console.log('Initializing map...');
+    initializeMap();
+    setupLocationSuggestions();
+});
 
-        // Initialize the map with default view of Netherlands
+function initializeMap() {
+    const mapElement = document.getElementById('map');
+    if (!mapElement) {
+        console.log('Map element not found');
+        return;
+    }
+
+    console.log('Initializing map...');
+
+    try {
+        // Get event data from data attribute
+        const eventData = JSON.parse(mapElement.dataset.events || '[]');
+        console.log('Loaded event data:', eventData);
+
+        // Initialize the map
         const map = L.map('map', {
             center: [52.3676, 4.9041], // Amsterdam coordinates
             zoom: 7,
@@ -17,7 +30,7 @@ document.addEventListener('DOMContentLoaded', function() {
             maxZoom: 19
         }).addTo(map);
 
-        // Create a marker cluster group with custom options
+        // Create marker cluster group
         const markers = L.markerClusterGroup({
             showCoverageOnHover: false,
             maxClusterRadius: 50,
@@ -25,12 +38,9 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
         // Add markers for events with coordinates
-        if (typeof window.eventLocations !== 'undefined' && window.eventLocations.length > 0) {
-            console.log('Found event locations:', window.eventLocations);
-            const bounds = [];
-
-            window.eventLocations.forEach(event => {
-                // Convert coordinates to float and validate
+        const bounds = [];
+        eventData.forEach(event => {
+            if (event.latitude && event.longitude) {
                 const lat = parseFloat(event.latitude);
                 const lon = parseFloat(event.longitude);
 
@@ -38,152 +48,177 @@ document.addEventListener('DOMContentLoaded', function() {
                     lat >= -90 && lat <= 90 && 
                     lon >= -180 && lon <= 180) {
                     
+                    console.log(`Adding marker for "${event.title}" at [${lat}, ${lon}]`);
+                    
+                    // Create custom icon
+                    const eventIcon = L.divIcon({
+                        className: 'custom-div-icon',
+                        html: `<div style="background-color: #3498db; 
+                                    width: 12px; 
+                                    height: 12px; 
+                                    border-radius: 50%; 
+                                    border: 2px solid #fff;
+                                    box-shadow: 0 0 4px rgba(0,0,0,0.3);"></div>`,
+                        iconSize: [12, 12],
+                        iconAnchor: [6, 6]
+                    });
+
                     // Create marker
-                    const marker = L.marker([lat, lon]);
+                    const marker = L.marker([lat, lon], {icon: eventIcon});
+                    
+                    // Build location string
+                    const locationParts = [];
+                    if (event.location_name) locationParts.push(event.location_name);
+                    if (event.street_name) {
+                        let street = event.street_name;
+                        if (event.street_number) street += ' ' + event.street_number;
+                        locationParts.push(street);
+                    }
+                    if (event.postal_code) locationParts.push(event.postal_code);
                     
                     // Create popup content
                     const popupContent = `
                         <div class="event-popup">
                             <h5>${escapeHtml(event.title)}</h5>
-                            ${event.location ? `<p><i class="fas fa-map-marker-alt"></i> ${escapeHtml(event.location)}</p>` : ''}
-                            ${event.start ? `<p><i class="fas fa-clock"></i> ${escapeHtml(event.start)}</p>` : ''}
+                            ${locationParts.length > 0 ? 
+                                `<p><i class="fas fa-map-marker-alt"></i> ${escapeHtml(locationParts.join(', '))}</p>` : 
+                                ''}
+                            <p><i class="fas fa-clock"></i> ${escapeHtml(event.start_datetime)}</p>
                         </div>
                     `;
 
                     // Bind popup to marker
-                    marker.bindPopup(popupContent);
+                    marker.bindPopup(popupContent, {
+                        maxWidth: 300,
+                        minWidth: 200
+                    });
                     
                     // Add marker to cluster group
                     markers.addLayer(marker);
-                    
-                    // Add coordinates to bounds
                     bounds.push([lat, lon]);
                 }
-            });
-
-            // Add the marker cluster group to the map
-            map.addLayer(markers);
-
-            // Fit bounds if we have any valid markers
-            if (bounds.length > 0) {
-                map.fitBounds(bounds, { 
-                    padding: [50, 50],
-                    maxZoom: 13
-                });
             }
-        }
-    }
-
-    // Location suggestions functionality
-    const locationInput = document.querySelector('input[name="location_name"]');
-    if (locationInput) {
-        // Create suggestion container
-        const suggestionContainer = document.createElement('div');
-        suggestionContainer.className = 'suggestion-container';
-        suggestionContainer.style.cssText = `
-            position: absolute;
-            max-height: 200px;
-            overflow-y: auto;
-            background: white;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            display: none;
-            z-index: 1000;
-            width: 100%;
-        `;
-        locationInput.parentElement.style.position = 'relative';
-        locationInput.parentElement.appendChild(suggestionContainer);
-
-        // Add input event listener with debounce
-        let timeoutId = null;
-        locationInput.addEventListener('input', function(e) {
-            const query = e.target.value.trim();
-            
-            // Clear previous timeout
-            if (timeoutId) {
-                clearTimeout(timeoutId);
-            }
-
-            // Set new timeout
-            timeoutId = setTimeout(async () => {
-                if (query.length < 3) {
-                    suggestionContainer.style.display = 'none';
-                    return;
-                }
-
-                try {
-                    const response = await fetch(`/api/location-suggestions?query=${encodeURIComponent(query)}`);
-                    if (!response.ok) throw new Error('Network response was not ok');
-                    
-                    const suggestions = await response.json();
-                    console.log('Received suggestions:', suggestions);
-
-                    // Clear previous suggestions
-                    suggestionContainer.innerHTML = '';
-
-                    if (suggestions.length > 0) {
-                        suggestions.forEach(suggestion => {
-                            const div = document.createElement('div');
-                            div.className = 'suggestion-item';
-                            div.style.cssText = `
-                                padding: 8px 12px;
-                                cursor: pointer;
-                                border-bottom: 1px solid #eee;
-                            `;
-                            div.textContent = suggestion.address;
-                            
-                            // Add hover effect
-                            div.addEventListener('mouseover', () => {
-                                div.style.backgroundColor = '#f0f0f0';
-                            });
-                            div.addEventListener('mouseout', () => {
-                                div.style.backgroundColor = 'white';
-                            });
-                            
-                            // Handle click
-                            div.addEventListener('click', () => {
-                                // Fill in the form fields
-                                const streetInput = document.querySelector('input[name="street_name"]');
-                                const streetNumberInput = document.querySelector('input[name="street_number"]');
-                                const postalCodeInput = document.querySelector('input[name="postal_code"]');
-
-                                locationInput.value = suggestion.address;
-                                if (streetInput && suggestion.street) {
-                                    streetInput.value = suggestion.street;
-                                }
-                                if (streetNumberInput && suggestion.house_number) {
-                                    streetNumberInput.value = suggestion.house_number;
-                                }
-                                if (postalCodeInput && suggestion.postal_code) {
-                                    postalCodeInput.value = suggestion.postal_code;
-                                }
-
-                                // Hide suggestions
-                                suggestionContainer.style.display = 'none';
-                            });
-
-                            suggestionContainer.appendChild(div);
-                        });
-                        suggestionContainer.style.display = 'block';
-                    } else {
-                        suggestionContainer.style.display = 'none';
-                    }
-                } catch (error) {
-                    console.error('Error fetching suggestions:', error);
-                    suggestionContainer.style.display = 'none';
-                }
-            }, 300); // 300ms delay
         });
 
-        // Hide suggestions when clicking outside
-        document.addEventListener('click', function(e) {
-            if (!locationInput.contains(e.target) && !suggestionContainer.contains(e.target)) {
+        // Add markers to map
+        map.addLayer(markers);
+
+        // Fit bounds if we have markers
+        if (bounds.length > 0) {
+            console.log(`Fitting bounds to ${bounds.length} markers`);
+            map.fitBounds(bounds, { 
+                padding: [50, 50],
+                maxZoom: 13
+            });
+        } else {
+            console.log('No valid markers to fit bounds');
+        }
+    } catch (error) {
+        console.error('Error initializing map:', error);
+    }
+}
+
+function setupLocationSuggestions() {
+    const locationInput = document.querySelector('input[name="location_name"]');
+    if (!locationInput) return;
+
+    // Create suggestion container
+    const suggestionContainer = document.createElement('div');
+    suggestionContainer.className = 'suggestion-container';
+    suggestionContainer.style.cssText = `
+        position: absolute;
+        max-height: 200px;
+        overflow-y: auto;
+        background: white;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        display: none;
+        z-index: 1000;
+        width: 100%;
+    `;
+    locationInput.parentElement.style.position = 'relative';
+    locationInput.parentElement.appendChild(suggestionContainer);
+
+    // Handle input with debounce
+    let timeoutId = null;
+    locationInput.addEventListener('input', function(e) {
+        if (timeoutId) clearTimeout(timeoutId);
+        
+        timeoutId = setTimeout(async () => {
+            const query = e.target.value.trim();
+            if (query.length < 3) {
+                suggestionContainer.style.display = 'none';
+                return;
+            }
+
+            try {
+                console.log('Fetching suggestions for:', query);
+                const response = await fetch(`/api/location-suggestions?query=${encodeURIComponent(query)}`);
+                if (!response.ok) throw new Error('Network response was not ok');
+                
+                const suggestions = await response.json();
+                console.log('Received suggestions:', suggestions);
+                displaySuggestions(suggestions);
+            } catch (error) {
+                console.error('Error fetching suggestions:', error);
                 suggestionContainer.style.display = 'none';
             }
+        }, 300);
+    });
+
+    // Handle suggestion display
+    function displaySuggestions(suggestions) {
+        suggestionContainer.innerHTML = '';
+        
+        if (suggestions.length === 0) {
+            suggestionContainer.style.display = 'none';
+            return;
+        }
+
+        suggestions.forEach(suggestion => {
+            const div = document.createElement('div');
+            div.className = 'suggestion-item';
+            div.style.cssText = `
+                padding: 8px 12px;
+                cursor: pointer;
+                border-bottom: 1px solid #eee;
+            `;
+            div.textContent = suggestion.address;
+            
+            div.addEventListener('mouseover', () => div.style.backgroundColor = '#f0f0f0');
+            div.addEventListener('mouseout', () => div.style.backgroundColor = 'white');
+            
+            div.addEventListener('click', () => {
+                fillLocationFields(suggestion);
+                suggestionContainer.style.display = 'none';
+            });
+
+            suggestionContainer.appendChild(div);
         });
+
+        suggestionContainer.style.display = 'block';
     }
-});
+
+    // Fill form fields with selected suggestion
+    function fillLocationFields(suggestion) {
+        const streetInput = document.querySelector('input[name="street_name"]');
+        const streetNumberInput = document.querySelector('input[name="street_number"]');
+        const postalCodeInput = document.querySelector('input[name="postal_code"]');
+
+        locationInput.value = suggestion.address;
+        if (streetInput && suggestion.street) streetInput.value = suggestion.street;
+        if (streetNumberInput && suggestion.house_number) streetNumberInput.value = suggestion.house_number;
+        if (postalCodeInput && suggestion.postal_code) postalCodeInput.value = suggestion.postal_code;
+    }
+
+    // Hide suggestions when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!locationInput.contains(e.target) && !suggestionContainer.contains(e.target)) {
+            suggestionContainer.style.display = 'none';
+        }
+    });
+}
 
 // Helper function to escape HTML and prevent XSS
 function escapeHtml(unsafe) {
