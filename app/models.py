@@ -1,6 +1,5 @@
 from app import db
 from datetime import datetime
-from flask.json import JSONEncoder
 
 class Category(db.Model):
     id = db.Column(db.Integer, primary_key=True)
