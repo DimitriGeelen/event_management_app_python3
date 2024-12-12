@@ -20,18 +20,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     suggestionBox.style.display = 'block';
                     
                     fetch(`/api/location-suggestions?query=${encodeURIComponent(query)}`)
-                        .then(response => {
-                            if (!response.ok) {
-                                throw new Error(`HTTP error! status: ${response.status}`);
-                            }
-                            return response.json();
-                        })
+                        .then(response => response.json())
                         .then(data => {
-                            // Check if there's an error message
-                            if (data.error) {
-                                throw new Error(data.error);
-                            }
-                            
                             suggestionBox.innerHTML = '';
                             if (data.length > 0) {
                                 data.forEach(location => {
@@ -39,22 +29,16 @@ document.addEventListener('DOMContentLoaded', function() {
                                     div.className = 'location-suggestion-item';
                                     div.textContent = location.address;
                                     div.addEventListener('click', () => {
-                                        // Fill in all the address fields
-                                        const formElements = {
-                                            'location_name': location.address,
-                                            'street_name': location.street || '',
-                                            'street_number': location.house_number || '',
-                                            'postal_code': location.postal_code || ''
-                                        };
-                                        
-                                        // Update each form field if it exists
-                                        Object.entries(formElements).forEach(([fieldName, value]) => {
-                                            const field = document.querySelector(`[name="${fieldName}"]`);
-                                            if (field) {
-                                                field.value = value;
-                                            }
-                                        });
-                                        
+                                        document.querySelector('[name="location_name"]').value = location.address;
+                                        if (location.street) {
+                                            document.querySelector('[name="street_name"]').value = location.street;
+                                        }
+                                        if (location.house_number) {
+                                            document.querySelector('[name="street_number"]').value = location.house_number;
+                                        }
+                                        if (location.postal_code) {
+                                            document.querySelector('[name="postal_code"]').value = location.postal_code;
+                                        }
                                         suggestionBox.style.display = 'none';
                                     });
                                     suggestionBox.appendChild(div);
@@ -73,7 +57,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 } else {
                     suggestionBox.style.display = 'none';
                 }
-            }, 500); // Increased debounce time to 500ms
+            }, 300);
         });
         
         document.addEventListener('click', function(e) {
@@ -86,61 +70,70 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize map if it exists on the page
     const mapElement = document.getElementById('map');
     if (mapElement) {
-        // Initialize the map with Netherlands center
+        console.log('Initializing map...');
+
+        // Initialize the map
         const map = L.map('map').setView([52.3676, 4.9041], 7);
-        
-        // Add the OpenStreetMap tiles
+
+        // Add the base map layer
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 19,
-            attribution: '© OpenStreetMap contributors'
+            attribution: '© OpenStreetMap contributors',
+            maxZoom: 19
         }).addTo(map);
 
-        // Create a marker cluster group
-        const markers = L.markerClusterGroup();
-
-        // Add markers for all events with coordinates
-        if (typeof eventLocations !== 'undefined' && eventLocations.length > 0) {
+        // Check if we have event locations
+        if (typeof eventLocations !== 'undefined') {
+            console.log('Event locations found:', eventLocations);
+            
+            const markers = L.markerClusterGroup();
             const bounds = [];
+
             eventLocations.forEach(event => {
+                console.log('Processing event:', event);
+                
                 if (event.latitude && event.longitude) {
-                    const marker = L.marker([event.latitude, event.longitude])
-                        .bindPopup(`
-                            <div class="event-popup">
-                                <h5>${event.title}</h5>
-                                <p><i class="fas fa-tag"></i> ${event.category}</p>
-                                <p><i class="fas fa-map-marker-alt"></i> ${event.location}</p>
-                                <p><i class="fas fa-clock"></i> ${event.start}</p>
-                            </div>
-                        `);
+                    console.log(`Adding marker at ${event.latitude}, ${event.longitude}`);
+                    
+                    const popupContent = `
+                        <div class="event-popup">
+                            <h5>${event.title}</h5>
+                            <p><i class="fas fa-map-marker-alt"></i> ${event.location}</p>
+                            <p><i class="fas fa-clock"></i> ${event.start}</p>
+                        </div>
+                    `;
+
+                    const marker = L.marker([parseFloat(event.latitude), parseFloat(event.longitude)])
+                        .bindPopup(popupContent);
+                    
                     markers.addLayer(marker);
                     bounds.push([event.latitude, event.longitude]);
                 }
             });
 
-            // Add the marker cluster group to the map
+            // Add markers to map
             map.addLayer(markers);
 
-            // Fit the map to show all markers if there are any
+            // Fit bounds if we have any markers
             if (bounds.length > 0) {
+                console.log('Fitting bounds to markers');
                 map.fitBounds(bounds, { padding: [50, 50] });
+            } else {
+                console.log('No valid markers found');
             }
+        } else {
+            console.log('No event locations data found');
         }
 
-        // Add fullscreen control
+        // Add map controls
         map.addControl(new L.Control.Fullscreen());
-
-        // Add locate control
+        
         L.control.locate({
             position: 'topleft',
             strings: {
-                title: 'Show me where I am'
-            },
-            locateOptions: {
-                maxZoom: 15
+                title: 'Show my location'
             }
         }).addTo(map);
-
-        // Add scale control
-        L.control.scale().addTo(map);
+    } else {
+        console.log('Map element not found');
     }
 });
